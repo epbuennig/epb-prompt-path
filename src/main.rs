@@ -1,83 +1,39 @@
-use std::{env, error::Error, fmt::Write as _, process};
-use termion::color;
+#![feature(let_chains)]
 
-// cmd <path> [size]
+use path::PathPrompt;
+use std::{env, error::Error, path::PathBuf, process};
+use termion::{color, style};
+
+mod path;
+
+const ERROR_NON_UNICODE: &str = "fatal error on resolving reference, was not utf8";
+
+fn exec() -> Result<PathPrompt, Box<dyn Error>> {
+    let home = env::var_os("HOME").map(Into::<PathBuf>::into);
+    let dir = match env::args().nth(1) {
+        Some(dir) => dir.into(),
+        None => env::current_dir()?,
+    };
+
+    Ok(PathPrompt::new(home, dir))
+}
+
 fn main() {
     match exec() {
-        Ok(result) => println!("{}", result),
-        Err(_) => {
+        Ok(result) => println!("{:#}", result),
+        Err(err) => {
             println!(
-                "[{fg}error{n}]",
-                fg = color::Fg(color::Red),
-                n = color::Fg(color::Reset)
+                "[{}{}error{}]",
+                style::Bold,
+                color::Fg(color::Red),
+                style::Reset
             );
+
+            if let Some("--debug") = env::args().nth(2).as_deref() {
+                eprintln!("{err:?}");
+            }
 
             process::exit(1)
         }
     }
-}
-
-fn exec() -> Result<String, Box<dyn Error>> {
-    let mut args = env::args();
-    let dir = match args.nth(1) {
-        Some(dir) => dir,
-        None => env::current_dir()?.to_string_lossy().into_owned(),
-    };
-
-    let home = env::var("HOME")?;
-
-    let mut buf = String::new();
-
-    // strip home
-    let dir = if let Some(no_home) = dir.strip_prefix(&home) {
-        write!(
-            &mut buf,
-            "{fg_t}~{n}",
-            fg_t = color::Fg(color::Cyan),
-            n = color::Fg(color::Reset)
-        )?;
-        no_home
-    } else {
-        &dir
-    };
-
-    let mut iter = dir.split('/').filter(|s| !s.is_empty());
-    if let Some(target) = iter.next_back() {
-        write!(&mut buf, "/")?;
-        let size = args
-            .next()
-            .map(|size| size.parse().ok())
-            .flatten()
-            .unwrap_or(48);
-
-        // write prefix
-        for part in iter {
-            if dir.len() > size {
-                write!(
-                    &mut buf,
-                    "{fg_t}{part}{n}/",
-                    fg_t = color::Fg(color::LightBlack),
-                    part = &part[..1],
-                    n = color::Fg(color::Reset)
-                )?;
-            } else {
-                write!(
-                    &mut buf,
-                    "{fg_t}{part}{n}/",
-                    fg_t = color::Fg(color::Cyan),
-                    n = color::Fg(color::Reset)
-                )?;
-            };
-        }
-
-        // write target separately
-        write!(
-            &mut buf,
-            "{fg_t}{target}{n}",
-            fg_t = color::Fg(color::Cyan),
-            n = color::Fg(color::Reset)
-        )?;
-    }
-
-    Ok(buf)
 }
