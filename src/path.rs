@@ -1,7 +1,7 @@
 use crate::ERROR_NON_UNICODE;
 use std::{
     fmt::{Display, Write},
-    path::PathBuf,
+    path::{Component, PathBuf},
 };
 
 #[derive(Debug)]
@@ -37,7 +37,9 @@ impl Display for Prompt {
             self.path.as_path()
         };
 
-        let mut iter = dir.components();
+        let mut iter = dir
+            .components()
+            .filter(|comp| !matches!(comp, Component::RootDir));
         if let Some(target) = iter.next_back() {
             f.write_char('/')?;
 
@@ -64,7 +66,7 @@ impl Display for Prompt {
                     )?;
                 }
 
-                write!(f, "{target}",)?;
+                write!(f, "{target}")?;
             }
         }
 
