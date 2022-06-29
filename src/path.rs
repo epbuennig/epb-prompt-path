@@ -5,12 +5,12 @@ use std::{
 };
 
 #[derive(Debug)]
-pub struct PathPrompt {
+pub struct Prompt {
     home: Option<PathBuf>,
     path: PathBuf,
 }
 
-impl PathPrompt {
+impl Prompt {
     pub fn new(home: Option<PathBuf>, path: PathBuf) -> Self {
         debug_assert!(path.is_absolute(), "path should be absolute");
         debug_assert!(
@@ -22,7 +22,7 @@ impl PathPrompt {
     }
 }
 
-impl Display for PathPrompt {
+impl Display for Prompt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use termion::{color, style};
 

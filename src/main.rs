@@ -1,6 +1,6 @@
 #![feature(let_chains)]
 
-use path::PathPrompt;
+use path::Prompt;
 use std::{env, error::Error, path::PathBuf, process};
 use termion::{color, style};
 
@@ -8,14 +8,14 @@ mod path;
 
 const ERROR_NON_UNICODE: &str = "fatal error on resolving reference, was not utf8";
 
-fn exec() -> Result<PathPrompt, Box<dyn Error>> {
+fn exec() -> Result<Prompt, Box<dyn Error>> {
     let home = env::var_os("HOME").map(Into::<PathBuf>::into);
     let dir = match env::args().nth(1) {
         Some(dir) => dir.into(),
         None => env::current_dir()?,
     };
 
-    Ok(PathPrompt::new(home, dir))
+    Ok(Prompt::new(home, dir))
 }
 
 fn main() {
