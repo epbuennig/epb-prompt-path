@@ -49,34 +49,34 @@ impl Display for Prompt {
 
         let mut iter = dir
             .components()
-            .filter(|comp| !matches!(comp, Component::RootDir));
-        if let Some(target) = iter.next_back() {
-            f.write_char('/')?;
+            .filter(|comp| !matches!(comp, Component::RootDir))
+            .peekable();
 
-            let target = target.as_os_str().to_str().expect(ERROR_NON_UNICODE);
-
+        if iter.peek().is_some() {
             if f.alternate() {
                 for part in iter {
                     write!(
                         f,
-                        "{}{part}{}/",
+                        "/{}{part}{}",
                         color::Fg(color::Cyan),
                         style::Reset,
                         part = part.as_os_str().to_str().expect(ERROR_NON_UNICODE)
                     )?;
                 }
-
-                write!(f, "{}{target}{}", color::Fg(color::Cyan), style::Reset)?;
             } else {
                 for part in iter {
                     write!(
                         f,
-                        "{}/",
+                        "/{}",
                         part.as_os_str().to_str().expect(ERROR_NON_UNICODE)
                     )?;
                 }
-
-                write!(f, "{target}")?;
+            }
+        } else {
+            if f.alternate() {
+                write!(f, "{}/{}", color::Fg(color::Cyan), style::Reset,)?;
+            } else {
+                f.write_char('/')?;
             }
         }
 
