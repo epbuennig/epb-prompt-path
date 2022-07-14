@@ -1,7 +1,7 @@
 use crate::ERROR_NON_UNICODE;
 use std::{
     fmt::{Display, Write},
-    path::{Component, PathBuf},
+    path::{Component, Path, PathBuf},
 };
 
 #[derive(Debug)]
@@ -11,8 +11,11 @@ pub struct Prompt {
 }
 
 impl Prompt {
-    pub fn new(home: Option<PathBuf>, path: PathBuf) -> Self {
-        debug_assert!(path.is_absolute(), "path should be absolute");
+    pub fn new(home: Option<PathBuf>, mut path: PathBuf) -> Self {
+        if !path.is_absolute() {
+            path = Path::new("???").join(path);
+        }
+
         debug_assert!(
             home.as_ref().map(|p| p.is_absolute()).unwrap_or(true),
             "home should be absolute"
@@ -31,6 +34,13 @@ impl Display for Prompt {
                 write!(f, "{}~{}", color::Fg(color::Cyan), style::Reset)?;
             } else {
                 f.write_char('~')?;
+            }
+            rest
+        } else if let Ok(rest) = self.path.strip_prefix(Path::new("???")) {
+            if f.alternate() {
+                write!(f, "{}???{}", color::Fg(color::Cyan), style::Reset)?;
+            } else {
+                f.write_str("???")?;
             }
             rest
         } else {
