@@ -29,22 +29,22 @@ impl Display for Prompt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use termion::{color, style};
 
-        let dir = if let Some(home) = &self.home && let Ok(rest) = self.path.strip_prefix(home) {
+        let (dir, is_home) = if let Some(home) = &self.home && let Ok(rest) = self.path.strip_prefix(home) {
             if f.alternate() {
                 write!(f, "{}~{}", color::Fg(color::Cyan), style::Reset)?;
             } else {
                 f.write_char('~')?;
             }
-            rest
+            (rest, true)
         } else if let Ok(rest) = self.path.strip_prefix(Path::new("???")) {
             if f.alternate() {
                 write!(f, "{}???{}", color::Fg(color::Cyan), style::Reset)?;
             } else {
                 f.write_str("???")?;
             }
-            rest
+            (rest, false)
         } else {
-            self.path.as_path()
+            (self.path.as_path(), false)
         };
 
         let mut iter = dir
@@ -72,9 +72,9 @@ impl Display for Prompt {
                     )?;
                 }
             }
-        } else {
+        } else if !is_home {
             if f.alternate() {
-                write!(f, "{}/{}", color::Fg(color::Cyan), style::Reset,)?;
+                write!(f, "{}/{}", color::Fg(color::Cyan), style::Reset)?;
             } else {
                 f.write_char('/')?;
             }
