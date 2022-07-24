@@ -31,14 +31,14 @@ impl Display for Prompt {
 
         let (dir, is_home) = if let Some(home) = &self.home && let Ok(rest) = self.path.strip_prefix(home) {
             if f.alternate() {
-                write!(f, "{}~{}", color::Fg(color::Cyan), style::Reset)?;
+                write!(f, "{}~{}", color::Fg(color::Blue), style::Reset)?;
             } else {
                 f.write_char('~')?;
             }
             (rest, true)
         } else if let Ok(rest) = self.path.strip_prefix(Path::new("???")) {
             if f.alternate() {
-                write!(f, "{}???{}", color::Fg(color::Cyan), style::Reset)?;
+                write!(f, "{}???{}", color::Fg(color::Blue), style::Reset)?;
             } else {
                 f.write_str("???")?;
             }
@@ -57,10 +57,10 @@ impl Display for Prompt {
                 for part in iter {
                     write!(
                         f,
-                        "{}/{}{}",
-                        color::Fg(color::Cyan),
+                        "/{}{part}{}",
+                        color::Fg(color::Blue),
                         style::Reset,
-                        part.as_os_str().to_str().expect(ERROR_NON_UNICODE)
+                        part = part.as_os_str().to_str().expect(ERROR_NON_UNICODE)
                     )?;
                 }
             } else {
@@ -74,7 +74,7 @@ impl Display for Prompt {
             }
         } else if !is_home {
             if f.alternate() {
-                write!(f, "{}/{}", color::Fg(color::Cyan), style::Reset)?;
+                write!(f, "{}/{}", color::Fg(color::Blue), style::Reset)?;
             } else {
                 f.write_char('/')?;
             }
