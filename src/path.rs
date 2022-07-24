@@ -57,10 +57,10 @@ impl Display for Prompt {
                 for part in iter {
                     write!(
                         f,
-                        "/{}{part}{}",
+                        "{}/{}{}",
                         color::Fg(color::Cyan),
                         style::Reset,
-                        part = part.as_os_str().to_str().expect(ERROR_NON_UNICODE)
+                        part.as_os_str().to_str().expect(ERROR_NON_UNICODE)
                     )?;
                 }
             } else {
