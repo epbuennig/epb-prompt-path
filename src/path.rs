@@ -6,12 +6,13 @@ use std::{
 
 #[derive(Debug)]
 pub struct Prompt {
+    host: Option<String>,
     home: Option<PathBuf>,
     path: PathBuf,
 }
 
 impl Prompt {
-    pub fn new(home: Option<PathBuf>, mut path: PathBuf) -> Self {
+    pub fn new(host: Option<String>, home: Option<PathBuf>, mut path: PathBuf) -> Self {
         if !path.is_absolute() {
             path = Path::new("???").join(path);
         }
@@ -21,13 +22,21 @@ impl Prompt {
             "home should be absolute"
         );
 
-        Self { home, path }
+        Self { host, home, path }
     }
 }
 
 impl Display for Prompt {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use termion::{color, style};
+
+        if let Some(host) = &self.host {
+            if f.alternate() {
+                write!(f, "[{}{host}{}]:", color::Fg(color::Blue), style::Reset)?;
+            } else {
+                write!(f, "[{host}]:")?;
+            }
+        }
 
         let (dir, is_home) = if let Some(home) = &self.home && let Ok(rest) = self.path.strip_prefix(home) {
             if f.alternate() {

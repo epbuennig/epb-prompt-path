@@ -9,13 +9,23 @@ mod path;
 const ERROR_NON_UNICODE: &str = "fatal error on resolving reference, was not utf8";
 
 fn exec() -> Result<Prompt, Box<dyn Error>> {
+    let host = if env::var_os("SSH_CLIENT").is_some() {
+        Some(
+            hostname::get()?
+                .into_string()
+                .map_err(|os| format!("cannot convert to string: {os:?}"))?,
+        )
+    } else {
+        None
+    };
+
     let home = env::var_os("HOME").map(Into::<PathBuf>::into);
     let dir = match env::args().nth(1) {
         Some(dir) => dir.into(),
         None => env::current_dir()?,
     };
 
-    Ok(Prompt::new(home, dir))
+    Ok(Prompt::new(host, home, dir))
 }
 
 fn main() {
